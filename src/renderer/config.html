@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações - QuickHub</title>
+  <script>
+    (function() {
+      var t = localStorage.getItem('quickhub-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="window config-window">
+    <!-- Titlebar -->
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-drag">
+        <span class="titlebar-icon">⚙</span>
+        <span class="titlebar-title">Configurações</span>
+      </div>
+      <div class="titlebar-controls">
+        <button class="titlebar-btn btn-close" id="btn-close" title="Fechar">✕</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="config-tabs">
+        <button class="tab-btn active" data-tab="shortcuts">Acessos Rápidos</button>
+        <button class="tab-btn" data-tab="settings">Atalhos & Config</button>
+      </div>
+
+      <!-- Tab: Shortcuts -->
+      <div class="tab-content active" id="tab-shortcuts">
+        <div class="config-header">
+          <h2>Gerenciar Acessos</h2>
+          <button class="btn-primary" id="btn-add-shortcut">+ Novo Acesso</button>
+        </div>
+
+        <div class="shortcuts-list" id="shortcuts-list">
+          <!-- Shortcuts will be listed here -->
+        </div>
+      </div>
+
+      <!-- Tab: Settings -->
+      <div class="tab-content" id="tab-settings">
+        <h2>Configurações</h2>
+        
+        <div class="settings-form">
+          <div class="form-group">
+            <label>Atalho - Mini Hub (Acesso Rápido)</label>
+            <p class="form-hint">Pressione para abrir o mini hub com seus acessos rápidos</p>
+            <div class="hotkey-input">
+              <input type="text" id="hotkey-mini" placeholder="Ctrl+Espaço" readonly>
+              <button class="btn-secondary" id="btn-record-mini">Gravar</button>
+              <button class="btn-secondary btn-small" id="btn-clear-mini">Limpar</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Atalho - Hub Principal</label>
+            <p class="form-hint">Pressione para abrir o hub completo</p>
+            <div class="hotkey-input">
+              <input type="text" id="hotkey-main" placeholder="Ctrl+Shift+Espaço" readonly>
+              <button class="btn-secondary" id="btn-record-main">Gravar</button>
+              <button class="btn-secondary btn-small" id="btn-clear-main">Limpar</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tema</label>
+            <p class="form-hint">Aparência do aplicativo</p>
+            <select id="theme">
+              <option value="dark">Escuro</option>
+              <option value="light">Claro</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-primary" id="btn-save-settings">Salvar Configurações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Shortcut -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Novo Acesso</h3>
+        <button class="btn-close-modal" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="shortcut-name" placeholder="Ex: Google Chrome">
+        </div>
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="shortcut-type">
+            <option value="url">URL / Site</option>
+            <option value="exe">Aplicativo (.exe)</option>
+            <option value="folder">Pasta</option>
+            <option value="file">Arquivo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Link ou Caminho</label>
+          <div class="path-input">
+            <input type="text" id="shortcut-path" placeholder="Colar link ou caminho">
+            <button class="btn-secondary" id="btn-pick-path">📂</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ícone (opcional)</label>
+          <div class="icon-picker">
+            <div class="icon-preview" id="icon-preview">
+              <span>📁</span>
+            </div>
+            <button class="btn-secondary" id="btn-pick-icon">Escolher Ícone</button>
+            <button class="btn-secondary btn-small" id="btn-auto-icon">Auto</button>
+            <button class="btn-secondary btn-small" id="btn-remove-icon">Remover</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Categoria</label>
+          <div class="category-input">
+            <select id="shortcut-category-select">
+              <option value="">Selecione ou crie...</option>
+            </select>
+            <input type="text" id="shortcut-category" placeholder="Nova categoria">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel">Cancelar</button>
+        <button class="btn-primary" id="btn-save">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+</body>
+</html>

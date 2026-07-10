@@ -1,0 +1,530 @@
+const { app, BrowserWindow, BrowserView, ipcMain, dialog, globalShortcut, Tray, Menu, nativeImage, shell } = require('electron');
+const path = require('path');
+const fs = require('fs');
+const { createTray } = require('./tray');
+const { loadConfig, saveConfig, getConfigPath } = require('./config');
+
+let mainWindow = null;
+let miniHubWindow = null;
+let configWindow = null;
+let tray = null;
+let browserView = null;
+let browserParentWindow = null;
+
+// Tamanho padrão do mini hub
+const MINI_HUB_WIDTH = 400;
+const MINI_HUB_HEIGHT = 300;
+const MINI_HUB_EXPANDED_WIDTH = 800;
+const MINI_HUB_EXPANDED_HEIGHT = 600;
+
+// Altura dos headers (titlebar + navbar do browser)
+const HEADER_HEIGHT_MAIN = 100;
+const HEADER_HEIGHT_MINI = 96;
+
+// Previne múltiplas instâncias
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
+
+const basePath = app.isPackaged ? process.resourcesPath : __dirname;
+
+// ===== HOTKEYS =====
+function registerAllHotkeys() {
+  globalShortcut.unregisterAll();
+  
+  const config = loadConfig();
+  const hotkeyMini = config.settings?.hotkeyMini || 'CommandOrControl+Space';
+  const hotkeyMain = config.settings?.hotkeyMain || 'CommandOrControl+Shift+Space';
+
+  try {
+    globalShortcut.register(hotkeyMini, () => toggleMiniHub());
+    console.log(`Hotkey Mini Hub: ${hotkeyMini}`);
+  } catch (error) {
+    console.error(`Erro hotkey mini: ${error.message}`);
+  }
+
+  try {
+    globalShortcut.register(hotkeyMain, () => toggleMainHub());
+    console.log(`Hotkey Main Hub: ${hotkeyMain}`);
+  } catch (error) {
+    console.error(`Erro hotkey main: ${error.message}`);
+  }
+}
+
+function toggleMainHub() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createMainWindow();
+  }
+
+  if (mainWindow.isVisible()) {
+    closeBrowser();
+    mainWindow.hide();
+  } else {
+    closeBrowser();
+    mainWindow.show();
+    mainWindow.focus();
+  }
+}
+
+function toggleMiniHub() {
+  if (!miniHubWindow || miniHubWindow.isDestroyed()) {
+    createMiniHubWindow();
+  }
+
+  if (miniHubWindow.isVisible()) {
+    closeBrowser();
+    miniHubWindow.hide();
+  } else {
+    const config = loadConfig();
+    closeBrowser();
+    miniHubWindow.webContents.send('load-shortcuts', config.shortcuts || []);
+    miniHubWindow.webContents.send('browser-closed');
+    miniHubWindow.setSize(MINI_HUB_WIDTH, MINI_HUB_HEIGHT);
+    miniHubWindow.center();
+    miniHubWindow.show();
+    miniHubWindow.focus();
+  }
+}
+
+// ===== WINDOWS =====
+function createMainWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1000,
+    height: 700,
+    frame: false,
+    transparent: false,
+    resizable: true,
+    show: false,
+    icon: path.join(basePath, 'resources', 'icon.png'),
+    backgroundColor: '#1a1a2e',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+
+  mainWindow.on('close', (e) => {
+    if (!app.isQuiting) {
+      e.preventDefault();
+      closeBrowser();
+      mainWindow.hide();
+    }
+  });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+
+  mainWindow.on('resize', () => {
+    if (browserView && browserParentWindow === mainWindow) {
+      adjustBrowserBounds();
+    }
+  });
+
+  return mainWindow;
+}
+
+function createMiniHubWindow() {
+  miniHubWindow = new BrowserWindow({
+    width: MINI_HUB_WIDTH,
+    height: MINI_HUB_HEIGHT,
+    frame: false,
+    transparent: false,
+    resizable: true,
+    show: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    icon: path.join(basePath, 'resources', 'icon.png'),
+    backgroundColor: '#1a1a2e',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  miniHubWindow.loadFile(path.join(__dirname, '..', 'renderer', 'mini.html'));
+
+  miniHubWindow.on('close', (e) => {
+    if (!app.isQuiting) {
+      e.preventDefault();
+      closeBrowser();
+      miniHubWindow.hide();
+    }
+  });
+
+  miniHubWindow.on('closed', () => {
+    miniHubWindow = null;
+  });
+
+  miniHubWindow.on('resize', () => {
+    if (browserView && browserParentWindow === miniHubWindow) {
+      adjustBrowserBounds();
+    }
+  });
+
+  return miniHubWindow;
+}
+
+function createConfigWindow() {
+  if (configWindow && !configWindow.isDestroyed()) {
+    configWindow.focus();
+    return configWindow;
+  }
+
+  configWindow = new BrowserWindow({
+    width: 700,
+    height: 600,
+    frame: false,
+    transparent: false,
+    resizable: true,
+    show: false,
+    icon: path.join(basePath, 'resources', 'icon.png'),
+    backgroundColor: '#1a1a2e',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  configWindow.loadFile(path.join(__dirname, '..', 'renderer', 'config.html'));
+
+  configWindow.on('closed', () => {
+    configWindow = null;
+  });
+
+  return configWindow;
+}
+
+// ===== BROWSER =====
+function adjustBrowserBounds() {
+  if (!browserView || !browserParentWindow) return;
+  const [width, height] = browserParentWindow.getContentSize();
+  const headerHeight = browserParentWindow === miniHubWindow ? HEADER_HEIGHT_MINI : HEADER_HEIGHT_MAIN;
+  
+  browserView.setBounds({ 
+    x: 0, 
+    y: headerHeight, 
+    width: width, 
+    height: Math.max(0, height - headerHeight) 
+  });
+}
+
+function openInBrowser(url) {
+  closeBrowser();
+
+  // Determina qual janela está ativa
+  if (miniHubWindow && !miniHubWindow.isDestroyed() && miniHubWindow.isVisible()) {
+    browserParentWindow = miniHubWindow;
+  } else if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible()) {
+    browserParentWindow = mainWindow;
+  } else {
+    if (!miniHubWindow || miniHubWindow.isDestroyed()) {
+      createMiniHubWindow();
+    }
+    browserParentWindow = miniHubWindow;
+    browserParentWindow.show();
+  }
+
+  // Expande mini hub se necessário
+  if (browserParentWindow === miniHubWindow) {
+    miniHubWindow.setSize(MINI_HUB_EXPANDED_WIDTH, MINI_HUB_EXPANDED_HEIGHT);
+    miniHubWindow.center();
+  }
+
+  browserView = new BrowserView({
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+      webSecurity: true
+    }
+  });
+
+  browserParentWindow.setBrowserView(browserView);
+  adjustBrowserBounds();
+  browserView.webContents.loadURL(url);
+
+  // Notifica o renderer
+  browserParentWindow.webContents.send('browser-opened', url);
+
+  // Intercepta novas janelas
+  browserView.webContents.setWindowOpenHandler(({ url }) => {
+    browserView.webContents.loadURL(url);
+    if (browserParentWindow && !browserParentWindow.isDestroyed()) {
+      browserParentWindow.webContents.send('browser-url-changed', url);
+    }
+    return { action: 'deny' };
+  });
+
+  // Atualiza URL na barra
+  const updateUrl = (event, url) => {
+    if (browserParentWindow && !browserParentWindow.isDestroyed()) {
+      browserParentWindow.webContents.send('browser-url-changed', url);
+    }
+  };
+
+  browserView.webContents.on('did-navigate', updateUrl);
+  browserView.webContents.on('did-navigate-in-page', updateUrl);
+}
+
+function closeBrowser() {
+  if (browserView) {
+    try {
+      if (browserParentWindow && !browserParentWindow.isDestroyed()) {
+        browserParentWindow.removeBrowserView(browserView);
+        browserParentWindow.webContents.send('browser-closed');
+        
+        // Restaura tamanho do mini hub
+        if (browserParentWindow === miniHubWindow) {
+          miniHubWindow.setSize(MINI_HUB_WIDTH, MINI_HUB_HEIGHT);
+          miniHubWindow.center();
+        }
+      }
+      browserView.webContents.destroy();
+    } catch (e) {}
+    browserView = null;
+    browserParentWindow = null;
+  }
+}
+
+// ===== IPC HANDLERS =====
+
+ipcMain.handle('get-shortcuts', () => {
+  const config = loadConfig();
+  return config.shortcuts || [];
+});
+
+ipcMain.handle('save-shortcuts', (event, shortcuts) => {
+  const config = loadConfig();
+  config.shortcuts = shortcuts;
+  saveConfig(config);
+  return true;
+});
+
+ipcMain.handle('get-settings', () => {
+  const config = loadConfig();
+  return config.settings || {};
+});
+
+ipcMain.handle('save-settings', (event, settings) => {
+  const config = loadConfig();
+  config.settings = { ...config.settings, ...settings };
+  saveConfig(config);
+  registerAllHotkeys();
+  
+  // Broadcast theme change to all windows
+  const theme = settings.theme || 'dark';
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('theme-changed', theme);
+  }
+  if (miniHubWindow && !miniHubWindow.isDestroyed()) {
+    miniHubWindow.webContents.send('theme-changed', theme);
+  }
+  
+  return true;
+});
+
+ipcMain.handle('open-shortcut', async (event, shortcut) => {
+  try {
+    switch (shortcut.type) {
+      case 'url':
+        openInBrowser(shortcut.path);
+        return { success: true };
+      case 'exe':
+      case 'folder':
+      case 'file':
+        await shell.openPath(shortcut.path);
+        // Fecha o mini hub quando abre pasta/arquivo/exe
+        if (miniHubWindow && !miniHubWindow.isDestroyed() && miniHubWindow.isVisible()) {
+          miniHubWindow.hide();
+        }
+        return { success: true };
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('open-external', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Browser controls
+ipcMain.handle('browser-go-back', () => {
+  if (browserView && browserView.webContents.canGoBack()) {
+    browserView.webContents.goBack();
+  }
+});
+
+ipcMain.handle('browser-go-forward', () => {
+  if (browserView && browserView.webContents.canGoForward()) {
+    browserView.webContents.goForward();
+  }
+});
+
+ipcMain.handle('browser-reload', () => {
+  if (browserView) {
+    browserView.webContents.reload();
+  }
+});
+
+ipcMain.handle('browser-go-url', (event, url) => {
+  if (browserView) {
+    let finalUrl = url;
+    if (!url.match(/^https?:\/\//i)) {
+      finalUrl = 'https://' + url;
+    }
+    browserView.webContents.loadURL(finalUrl);
+  }
+});
+
+ipcMain.handle('browser-close', () => {
+  closeBrowser();
+});
+
+// Mini hub resize
+ipcMain.handle('expand-mini-hub', () => {
+  if (miniHubWindow && !miniHubWindow.isDestroyed()) {
+    miniHubWindow.setSize(MINI_HUB_EXPANDED_WIDTH, MINI_HUB_EXPANDED_HEIGHT);
+    miniHubWindow.center();
+    if (browserView) adjustBrowserBounds();
+  }
+});
+
+ipcMain.handle('restore-mini-hub', () => {
+  if (miniHubWindow && !miniHubWindow.isDestroyed()) {
+    miniHubWindow.setSize(MINI_HUB_WIDTH, MINI_HUB_HEIGHT);
+    miniHubWindow.center();
+    if (browserView) adjustBrowserBounds();
+  }
+});
+
+// Open main hub
+ipcMain.handle('open-main-hub', () => {
+  closeBrowser();
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createMainWindow();
+  }
+  mainWindow.show();
+  mainWindow.focus();
+  if (miniHubWindow && !miniHubWindow.isDestroyed()) {
+    miniHubWindow.hide();
+  }
+});
+
+// Close all - fecha tudo
+ipcMain.handle('close-all', () => {
+  closeBrowser();
+  if (miniHubWindow && !miniHubWindow.isDestroyed()) {
+    miniHubWindow.hide();
+  }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.hide();
+  }
+});
+
+// File dialogs
+ipcMain.handle('pick-file', async (event, type) => {
+  const filters = {
+    exe: [{ name: 'Executáveis', extensions: ['exe', 'bat', 'cmd'] }],
+    file: [{ name: 'Todos os arquivos', extensions: ['*'] }],
+    folder: []
+  };
+
+  const properties = type === 'folder' ? ['openDirectory'] : ['openFile'];
+
+  const result = await dialog.showOpenDialog({
+    properties,
+    filters: filters[type] || []
+  });
+
+  return result.canceled ? null : result.filePaths[0];
+});
+
+ipcMain.handle('pick-icon', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [
+      { name: 'Imagens', extensions: ['png', 'jpg', 'jpeg', 'ico', 'svg'] }
+    ]
+  });
+
+  if (result.canceled) return null;
+
+  const iconPath = result.filePaths[0];
+  const iconsDir = path.join(__dirname, '..', 'renderer', 'assets', 'icons');
+  
+  if (!fs.existsSync(iconsDir)) {
+    fs.mkdirSync(iconsDir, { recursive: true });
+  }
+
+  const ext = path.extname(iconPath);
+  const newName = `icon_${Date.now()}${ext}`;
+  const destPath = path.join(iconsDir, newName);
+
+  fs.copyFileSync(iconPath, destPath);
+  return `assets/icons/${newName}`;
+});
+
+// Window controls
+ipcMain.handle('close-window', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    closeBrowser();
+    win.hide();
+  }
+});
+
+// Close browser only (go back to hub home, keep window visible)
+ipcMain.handle('close-browser-only', () => {
+  closeBrowser();
+});
+
+ipcMain.handle('minimize-window', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.minimize();
+});
+
+ipcMain.handle('open-config-window', () => {
+  createConfigWindow();
+  configWindow.show();
+});
+
+// App lifecycle
+app.whenReady().then(() => {
+  createMainWindow();
+  createMiniHubWindow();
+  tray = createTray(mainWindow, toggleMiniHub, toggleMainHub, app);
+  registerAllHotkeys();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createMainWindow();
+  } else {
+    mainWindow.show();
+  }
+});
+
+app.on('before-quit', () => {
+  app.isQuiting = true;
+  globalShortcut.unregisterAll();
+});

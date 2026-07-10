@@ -1,0 +1,53 @@
+{
+  "Electron Main": {
+    "prefix": "el-main",
+    "body": [
+      "const { app, BrowserWindow } = require('electron');",
+      "const path = require('path');",
+      "",
+      "function createWindow() {",
+      "  const win = new BrowserWindow({",
+      "    width: 800,",
+      "    height: 600,",
+      "    webPreferences: {",
+      "      preload: path.join(__dirname, 'preload.js'),",
+      "      contextIsolation: true,",
+      "      nodeIntegration: false",
+      "    }",
+      "  });",
+      "",
+      "  win.loadFile('index.html');",
+      "}",
+      "",
+      "app.whenReady().then(createWindow);",
+      "",
+      "app.on('window-all-closed', () => {",
+      "  if (process.platform !== 'darwin') {",
+      "    app.quit();",
+      "  }",
+      "});"
+    ],
+    "description": "Electron main process boilerplate"
+  },
+  "Electron Preload": {
+    "prefix": "el-preload",
+    "body": [
+      "const { contextBridge, ipcRenderer } = require('electron');",
+      "",
+      "contextBridge.exposeInMainWorld('electronAPI', {",
+      "  // Add your API methods here",
+      "});"
+    ],
+    "description": "Electron preload script boilerplate"
+  },
+  "IPC Handler": {
+    "prefix": "el-ipc",
+    "body": [
+      "ipcMain.handle('${1:channel}', async (event, ${2:args}) => {",
+      "  // Handle IPC call",
+      "  return ${3:result};",
+      "});"
+    ],
+    "description": "Electron IPC handler"
+  }
+}

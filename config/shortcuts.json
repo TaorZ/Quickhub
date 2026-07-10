@@ -1,0 +1,26 @@
+{
+  "shortcuts": [
+    {
+      "id": "example1",
+      "name": "Google",
+      "type": "url",
+      "path": "https://www.google.com",
+      "icon": null,
+      "category": "Sites"
+    },
+    {
+      "id": "example2",
+      "name": "Calculadora",
+      "type": "exe",
+      "path": "C:\\Windows\\System32\\calc.exe",
+      "icon": null,
+      "category": "Ferramentas"
+    }
+  ],
+  "settings": {
+    "hotkey": "CommandOrControl+Space",
+    "miniHubWidth": 400,
+    "miniHubHeight": 300,
+    "theme": "dark"
+  }
+}

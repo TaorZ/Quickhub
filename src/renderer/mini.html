@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickHub Mini</title>
+  <script>
+    (function() {
+      var t = localStorage.getItem('quickhub-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="mini-hub">
+  <div class="mini-window">
+    <div class="mini-header">
+      <span class="mini-icon">⚡</span>
+      <span class="mini-title">QuickHub</span>
+      <button class="mini-btn-settings" id="btn-settings" title="Configurações">⚙</button>
+      <button class="mini-btn-expand" id="btn-expand" title="Abrir Hub completo">⤢</button>
+      <button class="mini-btn-close" id="btn-close" title="Fechar">✕</button>
+    </div>
+
+    <!-- Browser Navbar (hidden by default) -->
+    <div class="browser-navbar mini-browser-nav" id="browser-navbar" style="display:none;">
+      <button class="browser-nav-btn" id="browser-back" title="Voltar">◀</button>
+      <button class="browser-nav-btn" id="browser-forward" title="Avançar">▶</button>
+      <button class="browser-nav-btn" id="browser-reload" title="Recarregar">↻</button>
+      <div class="browser-url-bar">
+        <input type="text" id="browser-url" placeholder="https://..." spellcheck="false">
+      </div>
+      <button class="browser-nav-btn" id="browser-external" title="Abrir no navegador">↗</button>
+      <button class="browser-nav-btn browser-close-btn" id="browser-close-btn" title="Fechar">✕</button>
+    </div>
+
+    <!-- Shortcuts List -->
+    <div class="mini-shortcuts" id="mini-shortcuts">
+      <!-- Shortcuts will be loaded here -->
+    </div>
+  </div>
+
+  <script src="js/mini.js"></script>
+</body>
+</html>

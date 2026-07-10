@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickHub</title>
+  <script>
+    // Aplica tema imediatamente antes do CSS carregar
+    (function() {
+      var t = localStorage.getItem('quickhub-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="window">
+    <!-- Titlebar -->
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-drag">
+        <span class="titlebar-icon">⚡</span>
+        <span class="titlebar-title">QuickHub</span>
+      </div>
+      <div class="titlebar-controls">
+        <button class="titlebar-btn" id="btn-settings" title="Configurações">⚙</button>
+        <button class="titlebar-btn" id="btn-minimize" title="Minimizar">─</button>
+        <button class="titlebar-btn btn-close" id="btn-close" title="Fechar">✕</button>
+      </div>
+    </div>
+
+    <!-- Internal Browser Navbar (hidden by default) -->
+    <div class="browser-navbar" id="browser-navbar" style="display:none;">
+      <button class="browser-nav-btn" id="browser-back" title="Voltar">◀</button>
+      <button class="browser-nav-btn" id="browser-forward" title="Avançar">▶</button>
+      <button class="browser-nav-btn" id="browser-reload" title="Recarregar">↻</button>
+      <div class="browser-url-bar">
+        <input type="text" id="browser-url" placeholder="https://..." spellcheck="false">
+      </div>
+      <button class="browser-nav-btn" id="browser-external" title="Abrir no navegador">↗</button>
+      <button class="browser-nav-btn browser-close-btn" id="browser-close-btn" title="Fechar navegador">✕</button>
+    </div>
+
+    <!-- Hub Content -->
+    <div class="content" id="hub-content">
+      <div class="shortcuts-container" id="shortcuts-container">
+        <!-- Categorias e shortcuts renderizados aqui -->
+      </div>
+    </div>
+
+    <!-- Footer with Add Button -->
+    <div class="footer" id="hub-footer">
+      <button class="btn-add" id="btn-add">
+        <span class="btn-add-icon">+</span>
+        <span>Novo Acesso</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Add -->
+  <div class="modal-overlay" id="modal-add">
+    <div class="modal modal-small">
+      <div class="modal-header">
+        <h3>Novo Acesso</h3>
+        <button class="btn-close-modal" id="modal-add-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Link ou Caminho</label>
+          <input type="text" id="new-url" placeholder="Colar link ou caminho (ex: google.com ou C:\Pasta)" autofocus>
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <div class="category-input">
+            <select id="new-category-select">
+              <option value="">Selecione ou crie...</option>
+            </select>
+            <input type="text" id="new-category" placeholder="Nova categoria">
+          </div>
+        </div>
+        <p class="modal-hint">O ícone e nome serão capturados automaticamente do site.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modal-add-cancel">Cancelar</button>
+        <button class="btn-primary" id="modal-add-save">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Access -->
+  <div class="modal-overlay" id="modal-edit">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Editar Acesso</h3>
+        <button class="btn-close-modal" id="modal-edit-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="edit-name" placeholder="Nome do acesso">
+        </div>
+
+        <div class="form-group">
+          <label>Link / Caminho</label>
+          <div class="path-input">
+            <input type="text" id="edit-path" placeholder="URL ou caminho do arquivo">
+            <button class="btn-secondary" id="btn-pick-path">📂</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="edit-type">
+            <option value="url">URL / Site</option>
+            <option value="exe">Aplicativo (.exe)</option>
+            <option value="folder">Pasta</option>
+            <option value="file">Arquivo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Categoria</label>
+          <div class="category-input">
+            <select id="edit-category-select">
+              <option value="">Selecione ou crie...</option>
+            </select>
+            <input type="text" id="edit-category" placeholder="Nova categoria">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ícone</label>
+          <div class="icon-picker">
+            <div class="icon-preview" id="edit-icon-preview">
+              <span>🌐</span>
+            </div>
+            <button class="btn-secondary" id="btn-pick-icon">Escolher</button>
+            <button class="btn-secondary btn-small" id="btn-auto-icon">Auto</button>
+            <button class="btn-secondary btn-small" id="btn-remove-icon">Remover</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="modal-edit-delete">Excluir</button>
+        <div class="modal-footer-right">
+          <button class="btn-secondary" id="modal-edit-cancel">Cancelar</button>
+          <button class="btn-primary" id="modal-edit-save">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Rename Category -->
+  <div class="modal-overlay" id="modal-rename-category">
+    <div class="modal modal-small">
+      <div class="modal-header">
+        <h3>Renomear Categoria</h3>
+        <button class="btn-close-modal" id="modal-rename-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nome da Categoria</label>
+          <input type="text" id="rename-category-name" placeholder="Novo nome">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modal-rename-cancel">Cancelar</button>
+        <button class="btn-primary" id="modal-rename-save">Renomear</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/hub.js"></script>
+</body>
+</html>

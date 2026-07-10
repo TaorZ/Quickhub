@@ -1,0 +1,146 @@
+{
+  "shortcuts": [
+    {
+      "id": "google_chrome",
+      "name": "Google Chrome",
+      "type": "exe",
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "icon": null,
+      "category": "Navegadores"
+    },
+    {
+      "id": "firefox",
+      "name": "Firefox",
+      "type": "exe",
+      "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+      "icon": null,
+      "category": "Navegadores"
+    },
+    {
+      "id": "edge",
+      "name": "Microsoft Edge",
+      "type": "exe",
+      "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "icon": null,
+      "category": "Navegadores"
+    },
+    {
+      "id": "vscode",
+      "name": "VS Code",
+      "type": "exe",
+      "path": "C:\\Users\\%USERNAME%\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+      "icon": null,
+      "category": "Desenvolvimento"
+    },
+    {
+      "id": "notepad_pp",
+      "name": "Notepad++",
+      "type": "exe",
+      "path": "C:\\Program Files\\Notepad++\\notepad++.exe",
+      "icon": null,
+      "category": "Desenvolvimento"
+    },
+    {
+      "id": "cmd",
+      "name": "Prompt de Comando",
+      "type": "exe",
+      "path": "C:\\Windows\\System32\\cmd.exe",
+      "icon": null,
+      "category": "Sistema"
+    },
+    {
+      "id": "powershell",
+      "name": "PowerShell",
+      "type": "exe",
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "icon": null,
+      "category": "Sistema"
+    },
+    {
+      "id": "explorer",
+      "name": "Explorador de Arquivos",
+      "type": "exe",
+      "path": "C:\\Windows\\explorer.exe",
+      "icon": null,
+      "category": "Sistema"
+    },
+    {
+      "id": "calc",
+      "name": "Calculadora",
+      "type": "exe",
+      "path": "C:\\Windows\\System32\\calc.exe",
+      "icon": null,
+      "category": "Ferramentas"
+    },
+    {
+      "id": "paint",
+      "name": "Paint",
+      "type": "exe",
+      "path": "C:\\Windows\\System32\\mspaint.exe",
+      "icon": null,
+      "category": "Ferramentas"
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "type": "url",
+      "path": "https://www.google.com",
+      "icon": null,
+      "category": "Sites"
+    },
+    {
+      "id": "gmail",
+      "name": "Gmail",
+      "type": "url",
+      "path": "https://mail.google.com",
+      "icon": null,
+      "category": "Sites"
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "type": "url",
+      "path": "https://www.youtube.com",
+      "icon": null,
+      "category": "Sites"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "type": "url",
+      "path": "https://github.com",
+      "icon": null,
+      "category": "Sites"
+    },
+    {
+      "id": "docs_folder",
+      "name": "Documentos",
+      "type": "folder",
+      "path": "C:\\Users\\%USERNAME%\\Documents",
+      "icon": null,
+      "category": "Pastas"
+    },
+    {
+      "id": "downloads_folder",
+      "name": "Downloads",
+      "type": "folder",
+      "path": "C:\\Users\\%USERNAME%\\Downloads",
+      "icon": null,
+      "category": "Pastas"
+    },
+    {
+      "id": "desktop_folder",
+      "name": "Área de Trabalho",
+      "type": "folder",
+      "path": "C:\\Users\\%USERNAME%\\Desktop",
+      "icon": null,
+      "category": "Pastas"
+    }
+  ],
+  "settings": {
+    "hotkey": "CommandOrControl+Space",
+    "miniHubWidth": 400,
+    "miniHubHeight": 300,
+    "theme": "dark"
+  }
+}
