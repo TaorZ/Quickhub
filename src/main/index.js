@@ -9,6 +9,13 @@ app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-software-rasterizer');
 
+// Otimizações de inicialização
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('no-first-run');
+app.commandLine.appendSwitch('no-sandbox');
+
 let mainWindow = null;
 let miniHubWindow = null;
 let configWindow = null;
@@ -95,8 +102,10 @@ function toggleMiniHub() {
 // ===== WINDOWS =====
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
+    width: 820,
+    height: 520,
+    minWidth: 600,
+    minHeight: 400,
     frame: false,
     transparent: false,
     resizable: true,
