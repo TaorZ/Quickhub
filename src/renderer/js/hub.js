@@ -87,6 +87,12 @@ class Hub {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('quickhub-theme', theme);
     });
+
+    // Shortcuts sync listener
+    window.electronAPI.onShortcutsUpdated((shortcuts) => {
+      this.shortcuts = shortcuts;
+      this.render();
+    });
   }
 
   showBrowser(url) {
@@ -161,9 +167,9 @@ class Hub {
           <span class="category-count">${items.length}</span>
         </div>
         <div class="category-actions">
-          <button class="category-rename" data-category="${category}" title="Renomear">✏</button>
-          <button class="category-delete" data-category="${category}" title="Excluir">🗑</button>
-          <button class="category-collapse" data-target="${groupId}">▼</button>
+          <button class="category-rename" data-category="${category}" title="Renomear"><img src="assets/icons/edit.png" alt="Renomear" class="icon-btn icon-btn-light"><img src="assets/icons/edit-escuro.png" alt="Renomear" class="icon-btn icon-btn-dark"></button>
+          <button class="category-delete" data-category="${category}" title="Excluir"><img src="assets/icons/delete.png" alt="Excluir" class="icon-btn icon-btn-light"><img src="assets/icons/delete.png" alt="Excluir" class="icon-btn icon-btn-dark"></button>
+          <button class="category-collapse" data-target="${groupId}"><img src="assets/icons/arrow-down.png" alt="Expandir" class="icon-btn collapse-icon icon-btn-light"><img src="assets/icons/arrow-escuro.png" alt="Expandir" class="icon-btn collapse-icon icon-btn-dark"></button>
         </div>
       </div>
       <div class="category-shortcuts" id="${groupId}">
@@ -175,7 +181,7 @@ class Hub {
     collapseBtn.addEventListener('click', () => {
       const grid = div.querySelector('.category-shortcuts');
       grid.classList.toggle('collapsed');
-      collapseBtn.textContent = grid.classList.contains('collapsed') ? '▶' : '▼';
+      collapseBtn.classList.toggle('collapsed', grid.classList.contains('collapsed'));
     });
 
     const renameBtn = div.querySelector('.category-rename');
@@ -197,7 +203,7 @@ class Hub {
     const icon = this.getIconHTML(shortcut);
     return `
       <div class="shortcut-card" data-id="${shortcut.id}" data-type="${shortcut.type}" title="${shortcut.name}">
-        <button class="edit-overlay" data-id="${shortcut.id}" title="Editar">✏</button>
+        <button class="edit-overlay" data-id="${shortcut.id}" title="Editar"><img src="assets/icons/edit.png" alt="Editar" class="icon-btn icon-btn-light"><img src="assets/icons/edit-escuro.png" alt="Editar" class="icon-btn icon-btn-dark"></button>
         <div class="shortcut-icon">${icon}</div>
         <div class="shortcut-name">${shortcut.name}</div>
       </div>
@@ -206,6 +212,10 @@ class Hub {
 
   getIconHTML(shortcut) {
     if (shortcut.icon) {
+      // Check if it's an emoji (not a file path)
+      if (!shortcut.icon.includes('/') && !shortcut.icon.includes('\\') && !shortcut.icon.includes('.')) {
+        return `<span style="font-size:24px;">${shortcut.icon}</span>`;
+      }
       return `<img src="${shortcut.icon}" alt="${shortcut.name}" onerror="this.parentElement.innerHTML='🌐'">`;
     }
     const icons = { url: '🌐', exe: '💻', folder: '📁', file: '📄' };
@@ -362,6 +372,75 @@ class Hub {
     
     await window.electronAPI.saveShortcuts(this.shortcuts);
     this.render();
+  }
+
+  // ===== ICON LIBRARY =====
+  openIconLibrary(callback) {
+    this.iconCallback = callback;
+    this.selectedIcon = null;
+    
+    const icons = [
+      '🌐', '💻', '📁', '📄', '🔗', '📧', '📊', '📈', '📉',
+      '📋', '📝', '📌', '📍', '🔑', '🔒', '🔓', '🛡️', '⚙️',
+      '🔧', '🔨', '⛏️', '🪛', '🔩', '💡', '🔌', '🔋', '💾',
+      '💿', '📀', '🖥️', '💻', '📱', '⌚', '📷', '📹', '🎥',
+      '📺', '📻', '🎙️', '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '🕰️',
+      '⌛', '⏳', '📡', '🔭', '🔬', '⚖️', '🔗', '📎', '🖇️',
+      '📐', '📏', '🧮', '🗑️', '🗃️', '🗄️', '📦', '🏷️', '🔖',
+      '💰', '💳', '💎', '⚖️', '🔧', '🔨', '⛏️', '🪛', '🔩',
+      '⚙️', '🔗', '📎', '🖇️', '📐', '📏', '🧮', '🗑️', '🗃️',
+      '🗄️', '📦', '🏷️', '🔖', '💰', '💳', '💎', '⚖️', '🔧',
+      '🎮', '🎯', '🎲', '🧩', '🎭', '🎨', '🎬', '🎤', '🎧',
+      '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲',
+      '♟️', '🎳', '🏏', '🏑', '🏒', '🥍', '🏓', '🏸', '🥊',
+      '🥋', '🥅', '⛳', '⛸️', '🎣', '🤿', '🎽', '🎿', '🛷',
+      '🥌', '🎯', '🥏', '🎱', '🔮', '🧿', '🎮', '🕹️', '🎰'
+    ];
+
+    const grid = document.getElementById('icons-grid');
+    grid.innerHTML = icons.map(icon => 
+      `<div class="icon-item" data-icon="${icon}">${icon}</div>`
+    ).join('');
+
+    // Setup search
+    const search = document.getElementById('icon-search');
+    search.value = '';
+    search.addEventListener('input', () => {
+      const filter = search.value.toLowerCase();
+      grid.querySelectorAll('.icon-item').forEach(item => {
+        const icon = item.dataset.icon;
+        item.style.display = icon.includes(filter) ? 'flex' : 'none';
+      });
+    });
+
+    // Setup selection
+    grid.addEventListener('click', (e) => {
+      const item = e.target.closest('.icon-item');
+      if (!item) return;
+      
+      grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      this.selectedIcon = item.dataset.icon;
+      document.getElementById('modal-icons-select').disabled = false;
+    });
+
+    // Setup buttons
+    document.getElementById('modal-icons-close').onclick = () => this.closeIconLibrary();
+    document.getElementById('modal-icons-cancel').onclick = () => this.closeIconLibrary();
+    document.getElementById('modal-icons-select').onclick = () => {
+      if (this.selectedIcon && this.iconCallback) {
+        this.iconCallback(this.selectedIcon);
+      }
+      this.closeIconLibrary();
+    };
+
+    document.getElementById('modal-icons').classList.add('active');
+  }
+
+  closeIconLibrary() {
+    document.getElementById('modal-icons').classList.remove('active');
+    this.selectedIcon = null;
+    this.iconCallback = null;
   }
 
   // ===== QUICK ADD =====
@@ -562,12 +641,11 @@ class Hub {
   }
 
   async pickIcon() {
-    const iconPath = await window.electronAPI.pickIcon();
-    if (iconPath) {
+    this.openIconLibrary((icon) => {
       const preview = document.getElementById('edit-icon-preview');
-      preview.innerHTML = `<img src="${iconPath}" alt="icon">`;
-      preview.dataset.icon = iconPath;
-    }
+      preview.innerHTML = `<span>${icon}</span>`;
+      preview.dataset.icon = icon;
+    });
   }
 
   async autoFetchIcon() {

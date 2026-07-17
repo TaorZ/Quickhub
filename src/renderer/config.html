@@ -78,6 +78,15 @@
             </select>
           </div>
 
+          <div class="form-group">
+            <label>Iniciar com o Windows</label>
+            <p class="form-hint">O QuickHub será iniciado automaticamente quando o Windows ligar</p>
+            <label class="toggle-switch">
+              <input type="checkbox" id="start-with-windows">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
           <div class="form-actions">
             <button class="btn-primary" id="btn-save-settings">Salvar Configurações</button>
           </div>
@@ -142,6 +151,28 @@
       <div class="modal-footer">
         <button class="btn-secondary" id="btn-cancel">Cancelar</button>
         <button class="btn-primary" id="btn-save">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Icon Library -->
+  <div class="modal-overlay" id="modal-icons">
+    <div class="modal modal-icons">
+      <div class="modal-header">
+        <h3>Biblioteca de Ícones</h3>
+        <button class="btn-close-modal" id="modal-icons-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="icons-search">
+          <input type="text" id="icon-search" placeholder="Buscar ícone...">
+        </div>
+        <div class="icons-grid" id="icons-grid">
+          <!-- Icons will be loaded here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modal-icons-cancel">Cancelar</button>
+        <button class="btn-primary" id="modal-icons-select" disabled>Selecionar</button>
       </div>
     </div>
   </div>

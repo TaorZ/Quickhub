@@ -18,7 +18,7 @@
     <!-- Titlebar -->
     <div class="titlebar" id="titlebar">
       <div class="titlebar-drag">
-        <span class="titlebar-icon">⚡</span>
+        <img src="../../resources/icon.png" alt="QuickHub" class="titlebar-icon-img">
         <span class="titlebar-title">QuickHub</span>
       </div>
       <div class="titlebar-controls">
@@ -165,6 +165,28 @@
       <div class="modal-footer">
         <button class="btn-secondary" id="modal-rename-cancel">Cancelar</button>
         <button class="btn-primary" id="modal-rename-save">Renomear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Icon Library -->
+  <div class="modal-overlay" id="modal-icons">
+    <div class="modal modal-icons">
+      <div class="modal-header">
+        <h3>Biblioteca de Ícones</h3>
+        <button class="btn-close-modal" id="modal-icons-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="icons-search">
+          <input type="text" id="icon-search" placeholder="Buscar ícone...">
+        </div>
+        <div class="icons-grid" id="icons-grid">
+          <!-- Icons will be loaded here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modal-icons-cancel">Cancelar</button>
+        <button class="btn-primary" id="modal-icons-select" disabled>Selecionar</button>
       </div>
     </div>
   </div>

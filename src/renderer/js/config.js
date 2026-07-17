@@ -294,7 +294,7 @@ class ConfigManager {
         <div class="shortcut-item-path">${shortcut.path}</div>
       </div>
       <div class="shortcut-item-actions">
-        <button class="btn-edit" data-id="${shortcut.id}">Editar</button>
+        <button class="btn-edit" data-id="${shortcut.id}"><img src="assets/icons/edit.png" alt="Editar" class="icon-btn icon-btn-light"><img src="assets/icons/edit-escuro.png" alt="Editar" class="icon-btn icon-btn-dark"> Editar</button>
         <button class="btn-delete" data-id="${shortcut.id}">Excluir</button>
       </div>
     `;
@@ -307,6 +307,10 @@ class ConfigManager {
 
   getIcon(shortcut) {
     if (shortcut.icon) {
+      // Check if it's an emoji (not a file path)
+      if (!shortcut.icon.includes('/') && !shortcut.icon.includes('\\') && !shortcut.icon.includes('.')) {
+        return `<span style="font-size:24px;">${shortcut.icon}</span>`;
+      }
       return `<img src="${shortcut.icon}" alt="${shortcut.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='🔗'">`;
     }
     const icons = { url: '🌐', exe: '💻', folder: '📁', file: '📄' };
@@ -386,12 +390,80 @@ class ConfigManager {
   }
 
   async pickIcon() {
-    const iconPath = await window.electronAPI.pickIcon();
-    if (iconPath) {
+    this.openIconLibrary((icon) => {
       const preview = document.getElementById('icon-preview');
-      preview.innerHTML = `<img src="${iconPath}" alt="icon">`;
-      preview.dataset.icon = iconPath;
-    }
+      preview.innerHTML = `<span>${icon}</span>`;
+      preview.dataset.icon = icon;
+    });
+  }
+
+  // ===== ICON LIBRARY =====
+  openIconLibrary(callback) {
+    this.iconCallback = callback;
+    this.selectedIcon = null;
+    
+    const icons = [
+      '🌐', '💻', '📁', '📄', '🔗', '📧', '📊', '📈', '📉',
+      '📋', '📝', '📌', '📍', '🔑', '🔒', '🔓', '🛡️', '⚙️',
+      '🔧', '🔨', '⛏️', '🪛', '🔩', '💡', '🔌', '🔋', '💾',
+      '💿', '📀', '🖥️', '💻', '📱', '⌚', '📷', '📹', '🎥',
+      '📺', '📻', '🎙️', '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '🕰️',
+      '⌛', '⏳', '📡', '🔭', '🔬', '⚖️', '🔗', '📎', '🖇️',
+      '📐', '📏', '🧮', '🗑️', '🗃️', '🗄️', '📦', '🏷️', '🔖',
+      '💰', '💳', '💎', '⚖️', '🔧', '🔨', '⛏️', '🪛', '🔩',
+      '⚙️', '🔗', '📎', '🖇️', '📐', '📏', '🧮', '🗑️', '🗃️',
+      '🗄️', '📦', '🏷️', '🔖', '💰', '💳', '💎', '⚖️', '🔧',
+      '🎮', '🎯', '🎲', '🧩', '🎭', '🎨', '🎬', '🎤', '🎧',
+      '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲',
+      '♟️', '🎳', '🏏', '🏑', '🏒', '🥍', '🏓', '🏸', '🥊',
+      '🥋', '🥅', '⛳', '⛸️', '🎣', '🤿', '🎽', '🎿', '🛷',
+      '🥌', '🎯', '🥏', '🎱', '🔮', '🧿', '🎮', '🕹️', '🎰'
+    ];
+
+    const grid = document.getElementById('icons-grid');
+    grid.innerHTML = icons.map(icon => 
+      `<div class="icon-item" data-icon="${icon}">${icon}</div>`
+    ).join('');
+
+    // Setup search
+    const search = document.getElementById('icon-search');
+    search.value = '';
+    search.addEventListener('input', () => {
+      const filter = search.value.toLowerCase();
+      grid.querySelectorAll('.icon-item').forEach(item => {
+        const icon = item.dataset.icon;
+        item.style.display = icon.includes(filter) ? 'flex' : 'none';
+      });
+    });
+
+    // Setup selection
+    grid.addEventListener('click', (e) => {
+      const item = e.target.closest('.icon-item');
+      if (!item) return;
+      
+      grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      this.selectedIcon = item.dataset.icon;
+      document.getElementById('modal-icons-select').disabled = false;
+    });
+
+    // Setup buttons
+    document.getElementById('modal-icons-close').onclick = () => this.closeIconLibrary();
+    document.getElementById('modal-icons-cancel').onclick = () => this.closeIconLibrary();
+    document.getElementById('modal-icons-select').onclick = () => {
+      if (this.selectedIcon && this.iconCallback) {
+        this.iconCallback(this.selectedIcon);
+      }
+      this.closeIconLibrary();
+    };
+
+    document.getElementById('modal-icons').classList.add('active');
+  }
+
+  closeIconLibrary() {
+    document.getElementById('modal-icons').classList.remove('active');
+    this.selectedIcon = null;
+    this.iconCallback = null;
   }
 
   async autoFetchIcon() {
@@ -485,6 +557,7 @@ class ConfigManager {
     document.getElementById('hotkey-mini').value = this.settings.hotkeyMini || 'CommandOrControl+Space';
     document.getElementById('hotkey-main').value = this.settings.hotkeyMain || 'CommandOrControl+Shift+Space';
     document.getElementById('theme').value = this.settings.theme || 'dark';
+    document.getElementById('start-with-windows').checked = this.settings.startWithWindows || false;
     
     // Aplica tema
     const theme = this.settings.theme || 'dark';
@@ -496,12 +569,14 @@ class ConfigManager {
     const hotkeyMini = document.getElementById('hotkey-mini').value.trim();
     const hotkeyMain = document.getElementById('hotkey-main').value.trim();
     const theme = document.getElementById('theme').value;
+    const startWithWindows = document.getElementById('start-with-windows').checked;
 
     this.settings = {
       ...this.settings,
       hotkeyMini: hotkeyMini || 'CommandOrControl+Space',
       hotkeyMain: hotkeyMain || 'CommandOrControl+Shift+Space',
-      theme: theme
+      theme: theme,
+      startWithWindows: startWithWindows
     };
 
     await window.electronAPI.saveSettings(this.settings);
@@ -509,6 +584,9 @@ class ConfigManager {
     // Aplica o tema e salva no localStorage
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('quickhub-theme', theme);
+    
+    // Update startup setting
+    await window.electronAPI.setStartWithWindows(startWithWindows);
     
     alert('Configurações salvas!');
   }

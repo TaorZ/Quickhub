@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Settings
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  setStartWithWindows: (enable) => ipcRenderer.invoke('set-start-with-windows', enable),
   
   // Browser controls
   browserGoBack: () => ipcRenderer.invoke('browser-go-back'),
@@ -54,5 +55,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onOpenConfig: (callback) => {
     ipcRenderer.on('open-config', () => callback());
+  },
+  onShortcutsUpdated: (callback) => {
+    ipcRenderer.on('shortcuts-updated', (event, shortcuts) => callback(shortcuts));
   }
 });

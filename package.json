@@ -1,6 +1,6 @@
 {
   "name": "quickhub",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Hub de Acessos Rápidos para empresa",
   "main": "src/main/index.js",
   "scripts": {

@@ -304,6 +304,15 @@ ipcMain.handle('save-shortcuts', (event, shortcuts) => {
   const config = loadConfig();
   config.shortcuts = shortcuts;
   saveConfig(config);
+
+  // Broadcast shortcuts change to all windows
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('shortcuts-updated', shortcuts);
+  }
+  if (miniHubWindow && !miniHubWindow.isDestroyed()) {
+    miniHubWindow.webContents.send('shortcuts-updated', shortcuts);
+  }
+
   return true;
 });
 
@@ -327,6 +336,14 @@ ipcMain.handle('save-settings', (event, settings) => {
     miniHubWindow.webContents.send('theme-changed', theme);
   }
   
+  return true;
+});
+
+ipcMain.handle('set-start-with-windows', (event, enable) => {
+  app.setLoginItemSettings({
+    openAtLogin: enable,
+    path: app.getPath('exe')
+  });
   return true;
 });
 
@@ -508,6 +525,14 @@ app.whenReady().then(() => {
   createMiniHubWindow();
   tray = createTray(mainWindow, toggleMiniHub, toggleMainHub, app);
   registerAllHotkeys();
+
+  // Check if first run (no shortcuts configured)
+  const config = loadConfig();
+  if (!config.shortcuts || config.shortcuts.length === 0) {
+    // First run - show main hub for configuration
+    mainWindow.show();
+    mainWindow.focus();
+  }
 });
 
 app.on('window-all-closed', () => {

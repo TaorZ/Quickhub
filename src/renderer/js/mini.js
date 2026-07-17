@@ -47,6 +47,12 @@ class MiniHub {
       this.render();
     });
 
+    // Shortcuts sync listener
+    window.electronAPI.onShortcutsUpdated((shortcuts) => {
+      this.shortcuts = shortcuts;
+      this.render();
+    });
+
     window.electronAPI.onBrowserOpened((url) => {
       this.showBrowser(url);
     });
@@ -174,6 +180,10 @@ class MiniHub {
 
   getIcon(shortcut) {
     if (shortcut.icon) {
+      // Check if it's an emoji (not a file path)
+      if (!shortcut.icon.includes('/') && !shortcut.icon.includes('\\') && !shortcut.icon.includes('.')) {
+        return `<span style="font-size:24px;">${shortcut.icon}</span>`;
+      }
       return `<img src="${shortcut.icon}" alt="${shortcut.name}" style="width:24px;height:24px;" onerror="this.parentElement.innerHTML='🌐'">`;
     }
     const icons = { url: '🌐', exe: '💻', folder: '📁', file: '📄' };
