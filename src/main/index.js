@@ -4,6 +4,11 @@ const fs = require('fs');
 const { createTray } = require('./tray');
 const { loadConfig, saveConfig, getConfigPath } = require('./config');
 
+// Fix para problemas de renderização em máquinas com GPU incompatível
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+
 let mainWindow = null;
 let miniHubWindow = null;
 let configWindow = null;
@@ -245,6 +250,9 @@ function openInBrowser(url) {
       webSecurity: true
     }
   });
+
+  // User agent do Chrome para evitar bloqueio/detecção do Electron
+  browserView.webContents.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
   browserParentWindow.setBrowserView(browserView);
   adjustBrowserBounds();

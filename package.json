@@ -12,17 +12,24 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "electron-packager": "^17.1.2",
+    "png-to-ico": "^3.0.2"
   },
   "build": {
     "appId": "com.quickhub.app",
     "productName": "QuickHub",
+    "forceCodeSigning": false,
     "win": {
       "icon": "resources/icon.png",
       "target": [
-        "nsis",
         "portable"
-      ]
+      ],
+      "signAndEditExecutable": false,
+      "sign": null
+    },
+    "portable": {
+      "artifactName": "QuickHub-v${version}-win-x64.exe"
     },
     "directories": {
       "output": "dist"
