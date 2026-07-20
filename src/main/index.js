@@ -41,6 +41,10 @@ if (!gotTheLock) {
 
 const basePath = app.isPackaged ? process.resourcesPath : __dirname;
 
+// Carrega o ícone como nativeImage para usar em todas as janelas
+const iconPath = path.join(basePath, 'resources', 'icon.ico');
+const appIcon = nativeImage.createFromPath(iconPath);
+
 // ===== HOTKEYS =====
 function registerAllHotkeys() {
   globalShortcut.unregisterAll();
@@ -110,7 +114,7 @@ function createMainWindow() {
     transparent: false,
     resizable: true,
     show: false,
-    icon: path.join(basePath, 'resources', 'icon.ico'),
+    icon: appIcon,
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -152,7 +156,7 @@ function createMiniHubWindow() {
     show: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    icon: path.join(basePath, 'resources', 'icon.ico'),
+    icon: appIcon,
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -197,7 +201,7 @@ function createConfigWindow() {
     transparent: false,
     resizable: true,
     show: false,
-    icon: path.join(basePath, 'resources', 'icon.ico'),
+    icon: appIcon,
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

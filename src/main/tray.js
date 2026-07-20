@@ -4,7 +4,8 @@ const path = require('path');
 let tray = null;
 
 function createTray(mainWindow, toggleMiniHub, toggleMainHub, app) {
-  const iconPath = path.join(__dirname, '..', '..', 'resources', 'icon.ico');
+  const basePath = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', '..');
+  const iconPath = path.join(basePath, 'resources', 'icon.ico');
   
   let icon;
   try {
