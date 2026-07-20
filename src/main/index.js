@@ -357,11 +357,39 @@ ipcMain.handle('save-settings', (event, settings) => {
 });
 
 ipcMain.handle('set-start-with-windows', (event, enable) => {
-  app.setLoginItemSettings({
-    openAtLogin: enable,
-    path: app.getPath('exe')
-  });
-  return true;
+  try {
+    const exePath = app.getPath('exe');
+    const appName = 'QuickHub';
+    
+    // Usa registro do Windows para iniciar com o sistema
+    const { execSync } = require('child_process');
+    const regKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+    
+    if (enable) {
+      // Adiciona ao startup
+      execSync(`reg add "${regKey}" /v "${appName}" /t REG_SZ /d "\\"${exePath}\\"" /f`, { encoding: 'utf8' });
+    } else {
+      // Remove do startup
+      execSync(`reg delete "${regKey}" /v "${appName}" /f`, { encoding: 'utf8' });
+    }
+    
+    console.log(`Startup ${enable ? 'ativado' : 'desativado'}: ${exePath}`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao configurar startup:', error.message);
+    return false;
+  }
+});
+
+ipcMain.handle('is-start-with-windows', () => {
+  try {
+    const { execSync } = require('child_process');
+    const regKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+    const result = execSync(`reg query "${regKey}" /v "QuickHub"`, { encoding: 'utf8' });
+    return result.includes('QuickHub');
+  } catch (error) {
+    return false;
+  }
 });
 
 ipcMain.handle('open-shortcut', async (event, shortcut) => {

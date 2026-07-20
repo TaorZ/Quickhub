@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
   setStartWithWindows: (enable) => ipcRenderer.invoke('set-start-with-windows', enable),
+  isStartWithWindows: () => ipcRenderer.invoke('is-start-with-windows'),
   
   // Browser controls
   browserGoBack: () => ipcRenderer.invoke('browser-go-back'),

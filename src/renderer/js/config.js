@@ -553,11 +553,15 @@ class ConfigManager {
   }
 
   // Settings
-  loadSettings() {
+  async loadSettings() {
     document.getElementById('hotkey-mini').value = this.settings.hotkeyMini || 'CommandOrControl+Space';
     document.getElementById('hotkey-main').value = this.settings.hotkeyMain || 'CommandOrControl+Shift+Space';
     document.getElementById('theme').value = this.settings.theme || 'dark';
-    document.getElementById('start-with-windows').checked = this.settings.startWithWindows || false;
+    
+    // Verifica estado real do startup no registro
+    const isStartupEnabled = await window.electronAPI.isStartWithWindows();
+    document.getElementById('start-with-windows').checked = isStartupEnabled;
+    this.settings.startWithWindows = isStartupEnabled;
     
     // Aplica tema
     const theme = this.settings.theme || 'dark';
