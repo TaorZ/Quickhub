@@ -25,10 +25,18 @@
     "win": {
       "icon": "resources/icon.ico",
       "target": [
-        "portable"
+        "portable",
+        "nsis"
       ],
       "signAndEditExecutable": false,
       "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "QuickHub"
     },
     "portable": {
       "artifactName": "QuickHub-v${version}-win-x64.exe"

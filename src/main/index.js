@@ -14,7 +14,6 @@ app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 app.commandLine.appendSwitch('no-first-run');
-app.commandLine.appendSwitch('no-sandbox');
 
 let mainWindow = null;
 let miniHubWindow = null;
