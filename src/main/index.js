@@ -384,37 +384,63 @@ ipcMain.handle('save-settings', (event, settings) => {
   return true;
 });
 
-ipcMain.handle('set-start-with-windows', (event, enable) => {
+function getStartupExePath() {
+  if (process.env.PORTABLE_EXECUTABLE_FILE) {
+    return process.env.PORTABLE_EXECUTABLE_FILE;
+  }
+  return app.getPath('exe');
+}
+
+function setStartupConfig(enable) {
   try {
-    const exePath = app.getPath('exe');
+    const exePath = getStartupExePath();
     const appName = 'QuickHub';
     
-    // Usa registro do Windows para iniciar com o sistema
-    const { execSync } = require('child_process');
-    const regKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+    // Configura via API do Electron
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      path: exePath
+    });
     
-    if (enable) {
-      // Adiciona ao startup
-      execSync(`reg add "${regKey}" /v "${appName}" /t REG_SZ /d "\\"${exePath}\\"" /f`, { encoding: 'utf8' });
-    } else {
-      // Remove do startup
-      execSync(`reg delete "${regKey}" /v "${appName}" /f`, { encoding: 'utf8' });
+    // Garante no Registro do Windows com aspas corretas no caminho
+    if (process.platform === 'win32') {
+      const { execSync } = require('child_process');
+      const regKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+      
+      if (enable) {
+        execSync(`reg add "${regKey}" /v "${appName}" /t REG_SZ /d "\\"${exePath}\\"" /f`, { encoding: 'utf8' });
+      } else {
+        try {
+          execSync(`reg delete "${regKey}" /v "${appName}" /f`, { encoding: 'utf8' });
+        } catch (e) {}
+      }
     }
     
-    console.log(`Startup ${enable ? 'ativado' : 'desativado'}: ${exePath}`);
+    console.log(`Startup ${enable ? 'ativado' : 'desativado'} para: ${exePath}`);
     return true;
   } catch (error) {
     console.error('Erro ao configurar startup:', error.message);
     return false;
   }
+}
+
+ipcMain.handle('set-start-with-windows', (event, enable) => {
+  return setStartupConfig(enable);
 });
 
 ipcMain.handle('is-start-with-windows', () => {
   try {
-    const { execSync } = require('child_process');
-    const regKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
-    const result = execSync(`reg query "${regKey}" /v "QuickHub"`, { encoding: 'utf8' });
-    return result.includes('QuickHub');
+    const exePath = getStartupExePath();
+    const loginSettings = app.getLoginItemSettings({ path: exePath });
+    if (loginSettings.openAtLogin) return true;
+
+    if (process.platform === 'win32') {
+      const { execSync } = require('child_process');
+      const regKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+      const result = execSync(`reg query "${regKey}" /v "QuickHub"`, { encoding: 'utf8' });
+      return result.includes('QuickHub');
+    }
+    return false;
   } catch (error) {
     return false;
   }
@@ -599,8 +625,13 @@ app.whenReady().then(() => {
   tray = createTray(mainWindow, toggleMiniHub, toggleMainHub, app);
   registerAllHotkeys();
 
-  // Check if first run (no shortcuts configured)
+  // Sincroniza configuração de inicialização com o registro se estiver ativada
   const config = loadConfig();
+  if (config.settings && config.settings.startWithWindows) {
+    setStartupConfig(true);
+  }
+
+  // Check if first run (no shortcuts configured)
   if (!config.shortcuts || config.shortcuts.length === 0) {
     // First run - show main hub for configuration
     mainWindow.show();
