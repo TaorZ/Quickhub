@@ -557,6 +557,7 @@ class ConfigManager {
     document.getElementById('hotkey-mini').value = this.settings.hotkeyMini || 'CommandOrControl+Space';
     document.getElementById('hotkey-main').value = this.settings.hotkeyMain || 'CommandOrControl+Shift+Space';
     document.getElementById('theme').value = this.settings.theme || 'dark';
+    document.getElementById('use-external-browser').checked = !!this.settings.useExternalBrowser;
     
     // Verifica estado real do startup no registro
     const isStartupEnabled = await window.electronAPI.isStartWithWindows();
@@ -574,13 +575,15 @@ class ConfigManager {
     const hotkeyMain = document.getElementById('hotkey-main').value.trim();
     const theme = document.getElementById('theme').value;
     const startWithWindows = document.getElementById('start-with-windows').checked;
+    const useExternalBrowser = document.getElementById('use-external-browser').checked;
 
     this.settings = {
       ...this.settings,
       hotkeyMini: hotkeyMini || 'CommandOrControl+Space',
       hotkeyMain: hotkeyMain || 'CommandOrControl+Shift+Space',
       theme: theme,
-      startWithWindows: startWithWindows
+      startWithWindows: startWithWindows,
+      useExternalBrowser: useExternalBrowser
     };
 
     await window.electronAPI.saveSettings(this.settings);

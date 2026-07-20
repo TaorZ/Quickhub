@@ -449,7 +449,19 @@ ipcMain.handle('open-shortcut', async (event, shortcut) => {
   try {
     switch (shortcut.type) {
       case 'url':
-        openInBrowser(shortcut.path);
+        const config = loadConfig();
+        if (config.settings && config.settings.useExternalBrowser) {
+          let finalUrl = shortcut.path;
+          if (!finalUrl.match(/^https?:\/\//i)) {
+            finalUrl = 'https://' + finalUrl;
+          }
+          await shell.openExternal(finalUrl);
+          if (miniHubWindow && !miniHubWindow.isDestroyed() && miniHubWindow.isVisible()) {
+            miniHubWindow.hide();
+          }
+        } else {
+          openInBrowser(shortcut.path);
+        }
         return { success: true };
       case 'exe':
       case 'folder':

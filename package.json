@@ -22,6 +22,7 @@
     "appId": "com.quickhub.app",
     "productName": "QuickHub",
     "forceCodeSigning": false,
+    "compression": "maximum",
     "win": {
       "icon": "resources/icon.ico",
       "target": [
@@ -40,6 +41,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "QuickHub",
       "runAfterFinish": true,
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "installerHeaderIcon": "resources/icon.ico",
       "artifactName": "QuickHub-Setup-v${version}.exe"
     },
     "portable": {
