@@ -50,8 +50,20 @@ async function createRealIco() {
     ...pngBuffers.map(b => b.buffer)
   ]);
   
+  // Ensure build dir exists
+  const buildDir = path.join(__dirname, 'build');
+  if (!fs.existsSync(buildDir)) {
+    fs.mkdirSync(buildDir, { recursive: true });
+  }
+
+  const buildIcoPath = path.join(buildDir, 'icon.ico');
+  const buildPngPath = path.join(buildDir, 'icon.png');
+
   fs.writeFileSync(outputPath, icoFile);
-  console.log('Real ICO created at:', outputPath);
+  fs.writeFileSync(buildIcoPath, icoFile);
+  fs.copyFileSync(inputPath, buildPngPath);
+
+  console.log('Real ICO created at:', outputPath, 'and', buildIcoPath);
   console.log('Size:', icoFile.length, 'bytes');
 }
 
