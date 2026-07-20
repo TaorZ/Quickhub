@@ -22,7 +22,7 @@
     "productName": "QuickHub",
     "forceCodeSigning": false,
     "win": {
-      "icon": "resources/icon.ico",
+      "icon": "resources/icon.png",
       "target": [
         "portable"
       ],

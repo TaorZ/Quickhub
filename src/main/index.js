@@ -39,11 +39,14 @@ if (!gotTheLock) {
   app.quit();
 }
 
-const basePath = app.isPackaged ? process.resourcesPath : __dirname;
+const basePath = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', '..');
 
 // Carrega o ícone como nativeImage para usar em todas as janelas
-const iconPath = path.join(basePath, 'resources', 'icon.ico');
+const iconPath = path.join(basePath, 'resources', 'icon.png');
 const appIcon = nativeImage.createFromPath(iconPath);
+if (appIcon.isEmpty()) {
+  console.error('Ícone não encontrado em:', iconPath);
+}
 
 // ===== HOTKEYS =====
 function registerAllHotkeys() {

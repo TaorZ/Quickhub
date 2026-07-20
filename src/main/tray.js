@@ -5,15 +5,19 @@ let tray = null;
 
 function createTray(mainWindow, toggleMiniHub, toggleMainHub, app) {
   const basePath = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', '..');
-  const iconPath = path.join(basePath, 'resources', 'icon.ico');
+  const iconPath = path.join(basePath, 'resources', 'icon.png');
+  
+  console.log('Tray icon path:', iconPath);
   
   let icon;
   try {
     icon = nativeImage.createFromPath(iconPath);
     if (icon.isEmpty()) {
+      console.error('Tray icon is empty');
       icon = nativeImage.createEmpty();
     }
   } catch (e) {
+    console.error('Error loading tray icon:', e);
     icon = nativeImage.createEmpty();
   }
 
