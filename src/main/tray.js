@@ -1,12 +1,24 @@
 const { Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let tray = null;
 
+function getTrayIconPath(app) {
+  const rootDir = app.getAppPath();
+  const icoPath = path.join(rootDir, 'resources', 'icon.ico');
+  if (fs.existsSync(icoPath)) {
+    return icoPath;
+  }
+  const pngPath = path.join(rootDir, 'resources', 'icon.png');
+  if (fs.existsSync(pngPath)) {
+    return pngPath;
+  }
+  return path.join(__dirname, '..', '..', 'resources', 'icon.ico');
+}
+
 function createTray(mainWindow, toggleMiniHub, toggleMainHub, app) {
-  const basePath = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', '..');
-  const iconPath = path.join(basePath, 'resources', 'icon.png');
-  
+  const iconPath = getTrayIconPath(app);
   console.log('Tray icon path:', iconPath);
   
   let icon;
@@ -21,7 +33,9 @@ function createTray(mainWindow, toggleMiniHub, toggleMainHub, app) {
     icon = nativeImage.createEmpty();
   }
 
-  tray = new Tray(icon.resize({ width: 16, height: 16 }));
+  const trayImage = (iconPath.endsWith('.ico') && !icon.isEmpty()) ? icon : icon.resize({ width: 16, height: 16 });
+
+  tray = new Tray(trayImage);
   tray.setToolTip('QuickHub - Hub de Acessos Rápidos');
 
   const contextMenu = Menu.buildFromTemplate([

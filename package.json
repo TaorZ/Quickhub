@@ -5,8 +5,9 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win",
-    "build:portable": "electron-builder --win portable"
+    "icon": "node create-ico.js",
+    "build": "node create-ico.js && electron-builder --win",
+    "build:portable": "node create-ico.js && electron-builder --win portable"
   },
   "author": "QuickHub",
   "license": "MIT",
@@ -22,7 +23,7 @@
     "productName": "QuickHub",
     "forceCodeSigning": false,
     "win": {
-      "icon": "resources/icon.png",
+      "icon": "resources/icon.ico",
       "target": [
         "portable"
       ],

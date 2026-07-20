@@ -39,14 +39,35 @@ if (!gotTheLock) {
   app.quit();
 }
 
-const basePath = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', '..');
-
-// Carrega o ícone como nativeImage para usar em todas as janelas
-const iconPath = path.join(basePath, 'resources', 'icon.png');
-const appIcon = nativeImage.createFromPath(iconPath);
-if (appIcon.isEmpty()) {
-  console.error('Ícone não encontrado em:', iconPath);
+// Configura o AppUserModelID para o Windows associar o ícone correto na barra de tarefas
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.quickhub.app');
 }
+
+// Função para obter o caminho correto do ícone (funciona tanto em dev quanto empacotado/asar)
+function getAppIconPath() {
+  const rootDir = app.getAppPath();
+  const icoPath = path.join(rootDir, 'resources', 'icon.ico');
+  if (fs.existsSync(icoPath)) {
+    return icoPath;
+  }
+  const pngPath = path.join(rootDir, 'resources', 'icon.png');
+  if (fs.existsSync(pngPath)) {
+    return pngPath;
+  }
+  return path.join(__dirname, '..', '..', 'resources', 'icon.ico');
+}
+
+function getAppIcon() {
+  const iconPath = getAppIconPath();
+  const img = nativeImage.createFromPath(iconPath);
+  if (img.isEmpty()) {
+    console.error('Ícone não encontrado em:', iconPath);
+  }
+  return img;
+}
+
+const appIcon = getAppIcon();
 
 // ===== HOTKEYS =====
 function registerAllHotkeys() {
