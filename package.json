@@ -14,14 +14,15 @@
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
     "electron-packager": "^17.1.2",
-    "png-to-ico": "^3.0.2"
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.3"
   },
   "build": {
     "appId": "com.quickhub.app",
     "productName": "QuickHub",
     "forceCodeSigning": false,
     "win": {
-      "icon": "resources/icon.png",
+      "icon": "resources/icon.ico",
       "target": [
         "portable"
       ],

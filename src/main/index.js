@@ -110,7 +110,7 @@ function createMainWindow() {
     transparent: false,
     resizable: true,
     show: false,
-    icon: path.join(basePath, 'resources', 'icon.png'),
+    icon: path.join(basePath, 'resources', 'icon.ico'),
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -152,7 +152,7 @@ function createMiniHubWindow() {
     show: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    icon: path.join(basePath, 'resources', 'icon.png'),
+    icon: path.join(basePath, 'resources', 'icon.ico'),
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -197,7 +197,7 @@ function createConfigWindow() {
     transparent: false,
     resizable: true,
     show: false,
-    icon: path.join(basePath, 'resources', 'icon.png'),
+    icon: path.join(basePath, 'resources', 'icon.ico'),
     backgroundColor: '#1a1a2e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
