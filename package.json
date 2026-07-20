@@ -33,10 +33,14 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
+      "allowElevation": true,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "QuickHub"
+      "shortcutName": "QuickHub",
+      "runAfterFinish": true,
+      "artifactName": "QuickHub-Setup-v${version}.exe"
     },
     "portable": {
       "artifactName": "QuickHub-v${version}-win-x64.exe"
