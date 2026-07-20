@@ -23,6 +23,7 @@
     "productName": "QuickHub",
     "forceCodeSigning": false,
     "compression": "maximum",
+    "afterPack": "scripts/after-pack.js",
     "directories": {
       "buildResources": "build",
       "output": "dist"
